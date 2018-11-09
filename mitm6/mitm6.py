@@ -289,14 +289,14 @@ def parsepacket(p):
             send_dns_reply(p)
 
 
-def setupFakeDns():
+def setup_fake_dns():
     # We bind to port 53 to prevent ICMP port unreachable packets being sent
     # actual responses are sent by scapy
     sock = socket.socket(socket.AF_INET6, socket.SOCK_DGRAM)
     fulladdr = config.v6addr + '%' + config.default_if
     addrinfo = socket.getaddrinfo(fulladdr, 53, socket.AF_INET6, socket.SOCK_DGRAM)
     sock.bind(addrinfo[0][4])
-    sock.setblocking(0)
+    sock.setblocking(False)
     return sock
 
 
@@ -342,7 +342,8 @@ def main():
     parser.add_argument("-m", "--mac", type=str, metavar='ADDRESS',
                         help="Custom mac address - probably breaks stuff (default: mac of selected interface)")
     parser.add_argument("-a", "--no-ra", action='store_true',
-                        help="Do not advertise ourselves (useful for networks which detect rogue Router Advertisements)")
+                        help="Do not advertise ourselves "
+                             "(useful for networks which detect rogue Router Advertisements)")
     parser.add_argument("-v", "--verbose", action='store_true', help="Show verbose information")
     parser.add_argument("--debug", action='store_true', help="Show debug information")
 
@@ -399,7 +400,7 @@ def main():
         d.addErrback(print_err)
 
     # Set up DNS
-    dnssock = setupFakeDns()
+    dnssock = setup_fake_dns()
     reactor.adoptDatagramPort(dnssock.fileno(), socket.AF_INET6, DatagramProtocol())
 
     reactor.addSystemEventTrigger('before', 'shutdown', shutdownnotice)
