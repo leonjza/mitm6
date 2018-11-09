@@ -195,6 +195,7 @@ def send_dns_reply(p):
     # Not handled
     else:
         return
+
     if should_spoof_dns(reqname):
         resp /= DNS(id=dns.id, qr=1, qd=dns.qd, an=DNSRR(rrname=dns.qd.qname, ttl=100, rdata=rdata, type=dns.qd.qtype))
         try:
@@ -389,7 +390,7 @@ def main():
         print('Hostname blacklist: %s' % ', '.join(config.host_blacklist))
 
     # Main packet capture thread
-    d = threads.deferToThread(sniff, filter="ip6 proto \\udp or arp or udp port 53",
+    d = threads.deferToThread(sniff, iface=config.default_if, filter="ip6 proto \\udp or arp or udp port 53",
                               prn=lambda x: reactor.callFromThread(parsepacket, x), stop_filter=should_stop)
     d.addErrback(print_err)
 
